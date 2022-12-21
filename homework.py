@@ -7,7 +7,6 @@ import sys
 import telegram
 from dotenv import load_dotenv
 import time
-import datetime
 
 load_dotenv()
 logging.basicConfig(
@@ -68,9 +67,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(timestamp=0) -> requests:
-    """
-      Делает запрос к эндпоинту API-сервиса.
-      """
+    """Делает запрос к эндпоинту API-сервиса."""
     try:
         response = requests.get(
             URL,
@@ -102,7 +99,6 @@ def check_response(response: requests):
 
 def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
-
     status = homework['status']
     try:
         verdict = HOMEWORK_VERDICTS[status]
@@ -119,7 +115,6 @@ def parse_status(homework):
 
 def main():
     """Основная логика работы бота."""
-
     if not check_tokens():
         logger.critical('No tockens')
         sys.exit(1)
