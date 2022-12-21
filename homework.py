@@ -70,10 +70,6 @@ def send_message(bot, message):
 def get_api_answer(timestamp=0) -> requests:
     """
       Делает запрос к эндпоинту API-сервиса.
-      В качестве параметра в
-      функцию передается временная метка.
-      В случае успешного запроса должна возвращает ответ API,
-      приведя его из формата JSON к типам данных Python.
       """
     try:
         response = requests.get(
@@ -106,8 +102,8 @@ def check_response(response: requests):
 
 def parse_status(homework):
     """Извлекает из информации о домашней работе статус этой работы."""
-    status = homework['status']
 
+    status = homework['status']
     try:
         verdict = HOMEWORK_VERDICTS[status]
     except KeyError:
@@ -132,8 +128,6 @@ def main():
 
     while True:
         try:
-            unixtime = int(
-                time.mktime(datetime.date(2021, 1, 5).timetuple()))
             responce = get_api_answer(timestamp)
             result = check_response(responce)
             if len(result) > 0:
