@@ -129,25 +129,14 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     while True:
         try:
-            try:
-                api_response = get_api_answer(timestamp)
-            except Exception as e:
-                logger.error(f'Error api response {e}')
-            try:
-                result = check_response(api_response)
-            except Exception as e:
-                logger.error(f'Error api response {e}')
-            if len(result) > 0:
-                logger.debug('It is new result')
-                try:
-                    message = parse_status(result[0])
-                except Exception as e:
-                    logger.error(f"Parse status error {e}")
-
-                send_message(bot, message)
-                logger.debug("1")
-                if not api_response.get('current_date') is None:
-                    timestamp = api_response.get('current_date')
+            api_response = get_api_answer(timestamp)
+            result = check_response(api_response)
+            if len(result) <= 0:
+                continue
+            message = parse_status(result[0])
+            send_message(bot, message)
+            if not api_response.get('current_date') is None:
+                timestamp = api_response.get('current_date')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logger.critical(message)
