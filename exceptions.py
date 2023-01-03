@@ -28,3 +28,13 @@ class HomeWorkNameIsEmpty(Exception):
     """ В функции parse_status при обращении к словарю homeworks отсутствует
     запрашиваемое значение по ключ status"""
     pass
+
+
+class ResponseApiIsNotDict(TypeError):
+    """ Ответ от сервера не является словарем"""
+    pass
+
+
+class ResponseApiDictNotContainListHomeworks(TypeError):
+    """ Словарь ответа сервера не содержит вложенного списка 'homeworks'"""
+    pass

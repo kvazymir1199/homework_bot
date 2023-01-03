@@ -34,7 +34,6 @@ HOMEWORK_VERDICTS = {
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
-previous_status = ''
 
 
 def check_tokens() -> bool:
@@ -42,7 +41,7 @@ def check_tokens() -> bool:
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
-def send_message(bot, message):
+def send_message(bot, message) -> None:
     """Отправляет сообщение в Telegram чат."""
     logger.info("Starting process sending message")
     try:
@@ -50,8 +49,8 @@ def send_message(bot, message):
     except telegram.error.TelegramError as e:
         logger.error(f"Sending message to Telegram error {e}")
         raise exceptions.TelegramSendMessageError(
-            f'Cannot send message to chat. Error: '
-            f'{e}')
+            f'Cannot send message to chat. Error:{e}'
+        )
     logger.debug("Message successfully sent")
 
 
@@ -78,19 +77,17 @@ def get_api_answer(timestamp=0) -> dict:
 def check_response(response: requests):
     """Проверяет ответ API на соответствие документации."""
     if not isinstance(response, dict):
-        logger.error("Api result isnt dict")
-        # Вот тут тест не позволяет добавить свое исключение
-        raise TypeError("Api возвращает не словарь")
+        raise exceptions.ResponseApiIsNotDict(
+            f"Api возвращает не словарь, f {type(response)}"
+        )
     if 'homeworks' not in response:
-        logger.error("Не найден ключ 'homeworks")
         raise exceptions.CheckResponseEmptyKeyHomeworks(
             "key 'homeworks' wasn't found"
         )
     if not isinstance(response.get('homeworks'), list):
-        logger.error("Api didnt have list homeworks")
-        # Анологично вот здесь
-        raise TypeError("Api не передает список homeworks")
-
+        raise exceptions.ResponseApiDictNotContainListHomeworks(
+            "Api не передает список homeworks"
+        )
     return response.get('homeworks')
 
 
@@ -99,7 +96,7 @@ def parse_status(homework: dict):
     status = homework.get('status')
 
     if status is None:
-        raise exceptions.HomeWorkStatusIsEmpty()
+        raise exceptions.HomeWorkStatusIsEmpty("Статус работы отсутствует")
     verdict = HOMEWORK_VERDICTS.get(status)
     if verdict is None:
         raise KeyError('Отсутствует статус работы в ответе сервера')
@@ -109,15 +106,12 @@ def parse_status(homework: dict):
         raise exceptions.HomeWorkNameIsEmpty(
             'Отсутствует имя работы в ответе сервера'
         )
-
-    global previous_status
-    if status != previous_status:
-        return f'Изменился статус проверки работы "{homework_name}". {verdict}'
-    previous_status = status
+    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def main():
     """Основная логика работы бота."""
+    previous_message = ''
     if not check_tokens():
         logger.critical(
             "Some tokens aren't founded."
@@ -125,21 +119,28 @@ def main():
             f"Check it. Process is finished"
         )
         sys.exit("Some tokens are missed. Program process stop")
-    timestamp = int(1)
+    timestamp = int(time.time())
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     while True:
         try:
             api_response = get_api_answer(timestamp)
             result = check_response(api_response)
             if len(result) <= 0:
+                logger.debug('Список домашних заданий пуст')
                 continue
             message = parse_status(result[0])
-            send_message(bot, message)
-            if not api_response.get('current_date') is None:
-                timestamp = api_response.get('current_date')
+            if message != previous_message:
+                send_message(bot, message)
+                logger.debug("Сообщение успешно отправлено!")
+            else:
+                logger.debug("Статус не изменился")
+                previous_message = message
+            api_response.get('current_date', timestamp)
+
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            logger.critical(message)
+            send_message(bot, message)
+            logger.error(message)
         finally:
             time.sleep(RETRY_PERIOD)
 
