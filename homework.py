@@ -69,7 +69,10 @@ def get_api_answer(timestamp=0) -> dict:
     if response.status_code != HTTPStatus.OK:
         raise exceptions.BadRequest(
             f'Не удалось получить данные с сервера.'
-            f'Ответ сервера{response.status_code}'
+            f'Ответ сервера:'
+            f'{response.status_code}'
+            f'{response.reason}'
+            f'{response.headers}'
         )
     return response.json()
 
@@ -78,7 +81,7 @@ def check_response(response: requests):
     """Проверяет ответ API на соответствие документации."""
     if not isinstance(response, dict):
         raise exceptions.ResponseApiIsNotDict(
-            f"Api возвращает не словарь, f {type(response)}"
+            f"Api возвращает не словарь, {type(response)}"
         )
     if 'homeworks' not in response:
         raise exceptions.CheckResponseEmptyKeyHomeworks(
@@ -86,12 +89,12 @@ def check_response(response: requests):
         )
     if not isinstance(response.get('homeworks'), list):
         raise exceptions.ResponseApiDictNotContainListHomeworks(
-            "Api не передает список homeworks"
+            f"Api не передает список homeworks {type(response)}"
         )
     return response.get('homeworks')
 
 
-def parse_status(homework: dict):
+def parse_status(homework: dict) -> str:
     """Извлекает из информации о домашней работе статус этой работы."""
     status = homework.get('status')
 
@@ -99,7 +102,8 @@ def parse_status(homework: dict):
         raise exceptions.HomeWorkStatusIsEmpty("Статус работы отсутствует")
     verdict = HOMEWORK_VERDICTS.get(status)
     if verdict is None:
-        raise KeyError('Отсутствует статус работы в ответе сервера')
+        raise KeyError(f'Отсутствует статус работы в ответе сервера'
+                       f'статус: {verdict}')
 
     homework_name = homework.get('homework_name')
     if homework_name is None:
@@ -132,9 +136,9 @@ def main():
             if message != previous_message:
                 send_message(bot, message)
                 logger.debug("Сообщение успешно отправлено!")
+                previous_message = message
             else:
                 logger.debug("Статус не изменился")
-                previous_message = message
             api_response.get('current_date', timestamp)
 
         except Exception as error:
