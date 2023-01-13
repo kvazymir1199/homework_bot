@@ -102,8 +102,10 @@ def parse_status(homework: dict) -> str:
         raise exceptions.HomeWorkStatusIsEmpty("Статус работы отсутствует")
     verdict = HOMEWORK_VERDICTS.get(status)
     if verdict is None:
-        raise KeyError(f'Отсутствует статус работы в ответе сервера'
-                       f'статус: {verdict}')
+        raise KeyError(
+            f'Отсутствует статус работы в ответе сервера'
+            f'статус: {status}'
+        )
 
     homework_name = homework.get('homework_name')
     if homework_name is None:
@@ -137,10 +139,13 @@ def main():
                 send_message(bot, message)
                 logger.debug("Сообщение успешно отправлено!")
                 previous_message = message
+                # Если я правильно понял, вот тут я не допущу при успешной
+                # отправке сообщения его дублирования с помощью continue
+                # однако как оптимизировать этот кусок кода я не знаю
+                continue
             else:
                 logger.debug("Статус не изменился")
             api_response.get('current_date', timestamp)
-
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             send_message(bot, message)
@@ -151,3 +156,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
