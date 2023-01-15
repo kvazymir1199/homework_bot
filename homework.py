@@ -118,6 +118,7 @@ def parse_status(homework: dict) -> str:
 def main():
     """Основная логика работы бота."""
     previous_message = ''
+    message = ""
     if not check_tokens():
         logger.critical(
             "Some tokens aren't founded."
@@ -135,22 +136,15 @@ def main():
                 logger.debug('Список домашних заданий пуст')
                 continue
             message = parse_status(result[0])
-            if message != previous_message:
-                send_message(bot, message)
-                logger.debug("Сообщение успешно отправлено!")
-                previous_message = message
-                # Если я правильно понял, вот тут я не допущу при успешной
-                # отправке сообщения его дублирования с помощью continue
-                # однако как оптимизировать этот кусок кода я не знаю
-                continue
-            else:
-                logger.debug("Статус не изменился")
+            logger.debug("Сообщение успешно отправлено!")
             api_response.get('current_date', timestamp)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            send_message(bot, message)
-            logger.error(message)
         finally:
+            if previous_message != message:
+                logger.error(message)
+                send_message(bot, message)
+                previous_message = message
             time.sleep(RETRY_PERIOD)
 
 
