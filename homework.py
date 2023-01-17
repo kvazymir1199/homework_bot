@@ -134,15 +134,14 @@ def main():
             result = check_response(api_response)
             if len(result) <= 0:
                 logger.debug('Список домашних заданий пуст')
-                continue
-            message = parse_status(result[0])
-            logger.debug("Сообщение успешно отправлено!")
-            api_response.get('current_date', timestamp)
+            else:
+                message = parse_status(result[0])
+                timestamp = api_response.get('current_date', timestamp)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
+            logger.error(message)
         finally:
             if previous_message != message:
-                logger.error(message)
                 send_message(bot, message)
                 previous_message = message
             time.sleep(RETRY_PERIOD)
