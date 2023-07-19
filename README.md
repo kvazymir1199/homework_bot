@@ -1,5 +1,6 @@
 ![Header](git_hub/preview.png)
-
+[![Python](https://img.shields.io/badge/-Python-464646?style=for-the-badge&logo=Python)](https://www.python.org/)
+![Telegramm](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
 ## Описание 
 
 Простой бот работающий с API Яндекс.Практикум, весь функцианал это отображать статсу проверки кода ревью вашей работы.
